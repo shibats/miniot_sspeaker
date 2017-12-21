@@ -95,7 +95,6 @@ def get_sound_chunk(format, channels, rate,
         # 音声データを読み込む
         cur_data = stream.read(chunk)
         slid_win.append(math.sqrt(abs(audioop.avg(cur_data, 4))))
-        print(slid_win[-1], sum([x > threshold for x in slid_win]))
         if sum([x > threshold for x in slid_win]) > startup_time:
             # 音の大きさが閾値を超えた状態の処理
             if not started:
