@@ -21,7 +21,8 @@ class Bing:
     def __init__(self):
         self.operation_timeout = None  # seconds after an internal operation 
 
-    def recognize(self, audio_data, key, language="ja-JP", show_all=False):
+    def recognize(self, audio_data, config=None, key='',
+                  language="ja-JP", show_all=False):
         """
         Performs speech recognition on ``audio_data`` (an ``AudioData`` instance), using the Microsoft Bing Speech API.
 
@@ -45,7 +46,7 @@ class Bing:
             credential_request = Request(credential_url, data=b"", headers={
                 "Content-type": "application/x-www-form-urlencoded",
                 "Content-Length": "0",
-                "Ocp-Apim-Subscription-Key": key,
+                "Ocp-Apim-Subscription-Key": key or config.BING_KEY,
             })
 
             if allow_caching:
@@ -113,7 +114,7 @@ def test_recognize(key, filename):
     ad = AudioData(open(filename, 'rb').read(), 
                    af.SAMPLE_RATE, af.SAMPLE_WIDTH)
     bs = Bing()
-    r = bs.recognize(ad, key, show_all=True)
+    r = bs.recognize(ad, key=key, show_all=True)
     print(r)
 
 if __name__ == '__main__':
