@@ -158,7 +158,7 @@ def test_record(key, rate=16000):
     sf.seek(0)
     ad = AudioData(sf.read(), 16000, w)
     bs = Bing()
-    r = bs.recognize(ad, key, show_all=True)
+    r = bs.recognize(ad, key=key, show_all=True)
     print(r)
 
 
