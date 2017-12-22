@@ -58,8 +58,8 @@ def speech(txt):
     """
     so = gTTS(text=txt, lang="ja")
     so.save('speech_text.mp3')
-    #os.system("omxplayer ./speech_text.mp3")
-    os.system("afplay ./speech_text.mp3")
+    os.system("omxplayer ./speech_text.mp3")
+    #os.system("afplay ./speech_text.mp3")
     os.remove('./speech_text.mp3')
 
 
