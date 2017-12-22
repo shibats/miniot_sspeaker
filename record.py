@@ -145,7 +145,7 @@ def test_record(key, rate=16000):
     logging.basicConfig(level=logging.DEBUG)
 
     from audio import AudioData, AudioFile
-    from bing_recignizer import Bing
+    from bing_recognizer import Bing
     threshold = audio_int(pyaudio.paInt16, 1, rate, 15)
     sf = BytesIO()
     sf, w = get_sound_chunk(pyaudio.paInt16, 1, rate, sf,
