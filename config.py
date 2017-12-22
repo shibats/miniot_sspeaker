@@ -12,5 +12,5 @@ MAX_SECOND = 9.5
 WAKE_WORD = 'ラズパイ'
 
 RECOGNIZER = Bing
-BING_KEY = 'a870b04c54b14f6e82201b8a3637a0e1'
+BING_KEY = '(Bing API Key)'
 
