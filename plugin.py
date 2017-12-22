@@ -4,6 +4,7 @@
 
 __all__ = ['import_commands', 'invoke_commands']
 
+import sys
 import os
 import importlib
 import traceback
@@ -51,7 +52,8 @@ def invoke_commands(w, config):
                 if mon_r:
                     # 戻り値が戻ったら，その値をそのまま返す
                     return mon_r
-        except Exception as e:
+        except:
+            e = e = sys.exc_info()[0]
             msg = "コマンド実行中にエラーが発生しました\n{}"
             logging.error(msg.format(traceback.format_tb(e)))
     # プラグインが反応しなかったので，Noneを返す
