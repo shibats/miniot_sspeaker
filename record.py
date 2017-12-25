@@ -170,7 +170,7 @@ def get_threshold():
     print("閾値は{}です。".format(int(threshold*1.2)))
 
 
-def save_test(fn, rate):
+def save_test(fn, rate=16000):
     """
     音声をファイルオブジェクトに保存する
     """
