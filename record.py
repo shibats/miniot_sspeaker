@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import time
 import math
@@ -149,7 +150,7 @@ def test_record(key, rate=16000):
     threshold = audio_int(pyaudio.paInt16, 1, rate, 15)
     sf = BytesIO()
     sf, w = get_sound_chunk(pyaudio.paInt16, 1, rate, sf,
-                         threshold+1.2,
+                         threshold*1.2,
                          config.STARTUP_TIME,
                          config.SILENCE_LIMIT,
                          config.PREV_LENGTH,
@@ -167,6 +168,32 @@ def get_threshold():
     print("閾値を測定します。静かにして少々お待ちください。")
     threshold = audio_int(pyaudio.paInt16, 1, config.SAMPLE_RATE, 30)
     print("閾値は{}です。".format(int(threshold*1.2)))
+
+
+def save_test(fn, rate):
+    """
+    音声をファイルオブジェクトに保存する
+    """
+
+    import config
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    from audio import AudioData, AudioFile
+    from bing_recognizer import Bing
+    threshold = audio_int(pyaudio.paInt16, 1, rate, 15)
+    sf = BytesIO()
+    sf, w = get_sound_chunk(pyaudio.paInt16, 1, rate, sf,
+                         threshold*1.2,
+                         config.STARTUP_TIME,
+                         config.SILENCE_LIMIT,
+                         config.PREV_LENGTH,
+                         config.MAX_SECOND)
+
+    sf.seek(0)
+    f = open(fn, 'wb')
+    f.write(sf.read())
+    f.close()
 
 
 if __name__ == '__main__':
