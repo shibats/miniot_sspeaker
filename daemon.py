@@ -39,7 +39,7 @@ def get_audiodata():
     return ad
 
 
-def recugnize(ad):
+def recognize(ad):
     """
     設定に従い音声認識を実行，結果を返す
     """
@@ -84,7 +84,7 @@ def run():
         ad = get_audiodata()
 
         # 音声認識を実行
-        result = recugnize(ad)
+        result = recognize(ad)
 
         if (result.get('RecognitionStatus', '') == 'Success' and
             result.get('DisplayText', '') == config.WAKE_WORD ):
@@ -94,7 +94,7 @@ def run():
 
             ad = get_audiodata()
             # 音声認識を実行
-            result = recugnize(ad)
+            result = recognize(ad)
 
             # 再起動，終了のコマンドを実行
             if result.get('DisplayText', '') == '再起動':
