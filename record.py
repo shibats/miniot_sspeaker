@@ -71,8 +71,21 @@ def get_sound_chunk(format, channels, rate,
 
     chunk = get_chunk(rate)
 
+    # 標準エラー出力をパイプして
+    # Raspberry PiのALSAが出すワーニングを抑制
+    stderr_fileno = sys.stderr.fileno()
+    stderr_save = os.dup(stderr_fileno)
+    stderr_pipe = os.pipe()
+    os.dup2(stderr_pipe[1], stderr_fileno)
+    os.close(stderr_pipe[1])    
+
     #PyAudioのストリームを開く
     audio = pyaudio.PyAudio()
+
+    # 標準エラー出力を戻す
+    os.close(stderr_pipe[0])
+    os.dup2(stderr_save, stderr_fileno)
+    os.close(stderr_save)
 
     stream = audio.open(format=format,
                         channels=channels,
