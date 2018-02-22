@@ -14,4 +14,4 @@ class TestGreeting(unittest.TestCase):
         """
         process()をテストする
         """
-        self.assertTrue(process("おはよう"), "お早うございます")
+        self.assertTrue(process("おはよう", None), "おはようございます")
