@@ -10,7 +10,7 @@ from greeting import *
 
 class TestGreeting(unittest.TestCase):
 
-    def test_get_table(self):
+    def test_process(self):
         """
         process()をテストする
         """
