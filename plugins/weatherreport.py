@@ -37,6 +37,9 @@ def process(message, config):
     config.WR_URL, config.WR_INDEXを使って天気予報を取得する
     """
 
+    if '天気' not in message:
+        return ''
+
     #try:
     if 1:
         # 天気予報のHTMLソースを取得
