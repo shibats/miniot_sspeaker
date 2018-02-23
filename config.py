@@ -12,7 +12,7 @@ MAX_SECOND = 9.5
 WAKE_WORD = 'ラズパイ'
 
 RECOGNIZER = Bing
-BING_KEY = 'db0b1e5e283a47699408dfac3b617f83'
+BING_KEY = '(Bing Speech APIのキー )'
 
 WR_URL = 'https://tenki.jp/week/3/'
 WR_INDEX = 0
