@@ -5,13 +5,17 @@ import sys
 import os
 import time
 import math
-from io import BytesIO
+from io import BytesIO, UnsupportedOperation
 import wave
 import audioop
 from collections import deque
 import logging
 
+import numpy as np
 import pyaudio
+
+lowpass = 100 # ローパスフィルタ用周波数
+highpass = 5000 # ハイパスフィルタ用周波数
 
 
 def get_chunk(rate):
@@ -41,14 +45,26 @@ def audio_int(format, channels, rate, num_samples=50):
                     input=True,
                     frames_per_buffer=chunk)
 
-    values = [math.sqrt(abs(audioop.avg(stream.read(chunk), 4))) 
+    # 余分な周波数を取り除く
+    cur_data = stream.read(chunk)
+    da = np.fromstring(cur_data, dtype=np.int16)
+    lf = np.fft.rfft(da)
+    lf[:lowpass] = 0 # low pass filter
+    lf[55:66] = 0 # line noise
+    lf[highpass:] = 0 # high pass filter
+    nl = np.fft.irfft(lf)
+    ns = nl.ravel().astype(np.int16)
+    cur_data = ns.tostring()
+
+
+    values = [math.sqrt(abs(audioop.avg(cur_data, 4))) 
               for x in range(num_samples)] 
     values = sorted(values, reverse=True)
     r = sum(values[:int(num_samples * 0.2)]) / int(num_samples * 0.2)
     stream.close()
     audio.terminate()
-    logging.debug("測定中のボリューム平均値 : {}".format(r))
-    return r
+    logging.debug("測定中のボリューム平均値 : {}".format(r*1.5))
+    return r*1.5
 
 
 def get_sound_chunk(format, channels, rate,
@@ -71,21 +87,26 @@ def get_sound_chunk(format, channels, rate,
 
     chunk = get_chunk(rate)
 
-    # 標準エラー出力をパイプして
-    # Raspberry PiのALSAが出すワーニングを抑制
-    stderr_fileno = sys.stderr.fileno()
-    stderr_save = os.dup(stderr_fileno)
-    stderr_pipe = os.pipe()
-    os.dup2(stderr_pipe[1], stderr_fileno)
-    os.close(stderr_pipe[1])    
+    stderr_fileno = None
+    try:
+        # 標準エラー出力をパイプして
+        # Raspberry PiのALSAが出すワーニングを抑制
+        stderr_fileno = sys.stderr.fileno()
+        stderr_save = os.dup(stderr_fileno)
+        stderr_pipe = os.pipe()
+        os.dup2(stderr_pipe[1], stderr_fileno)
+        os.close(stderr_pipe[1])    
+    except UnsupportedOperation:
+        pass
 
     #PyAudioのストリームを開く
     audio = pyaudio.PyAudio()
 
-    # 標準エラー出力を戻す
-    os.close(stderr_pipe[0])
-    os.dup2(stderr_save, stderr_fileno)
-    os.close(stderr_save)
+    if stderr_fileno:
+        # 標準エラー出力を戻す
+        os.close(stderr_pipe[0])
+        os.dup2(stderr_save, stderr_fileno)
+        os.close(stderr_save)
 
     stream = audio.open(format=format,
                         channels=channels,
@@ -108,8 +129,22 @@ def get_sound_chunk(format, channels, rate,
     while True:
         # 音声データを読み込む
         cur_data = stream.read(chunk)
-        slid_win.append(math.sqrt(abs(audioop.avg(cur_data, 4))))
-        if sum([x > threshold for x in slid_win]) > startup_time:
+
+        # 余分な周波数を取り除く
+        da = np.fromstring(cur_data, dtype=np.int16)
+        lf = np.fft.rfft(da)
+        lf[:lowpass] = 0 # low pass filter
+        lf[55:66] = 0 # line noise
+        lf[highpass:] = 0 # high pass filter
+        nl = np.fft.irfft(lf)
+        ns = nl.ravel().astype(np.int16)
+        dimd_data = ns.tostring()
+
+        slid_win.append(math.sqrt(abs(audioop.avg(dimd_data, 4))))
+        v = math.sqrt(abs(audioop.avg(dimd_data, 4)))
+        slid_l = list(slid_win)
+        pow = sum([x > threshold for x in slid_win])
+        if pow > startup_time:
             # 音の大きさが閾値を超えた状態の処理
             if not started:
                 # 開始フラグが立っていないので立てる
