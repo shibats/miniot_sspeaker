@@ -59,8 +59,14 @@ def speech(txt):
     so = gTTS(text=txt, lang="ja")
     so.save('speech_text.mp3')
     os.system("omxplayer ./speech_text.mp3")
-    #os.system("afplay ./speech_text.mp3")
-    os.remove('./speech_text.mp3')
+    #os.remove('./speech_text.mp3')
+
+
+def play_sound(path):
+    """
+    ファイルを指定して音声を再生する
+    """
+    os.system("aplay "+path)
 
 
 def restart():
@@ -77,6 +83,7 @@ def run():
     スマートスピーカーを動かす関数
     """
     logging.debug("スマートスピーカーを起動しました")
+    play_sound(config.STARTUP)
     while True:
         # メインループ
         
@@ -91,6 +98,7 @@ def run():
             # ウェイクワードが発声されたので，コマンドを待ち受け
             msg = "ウェイクワードを認識しました({})"
             logging.debug(msg.format(config.WAKE_WORD))
+            play_sound(config.COMMANDREADY)
 
             ad = get_audiodata()
             # 音声認識を実行
@@ -113,7 +121,7 @@ def run():
                 break
 
             # 音声コマンドを実行
-            com_result = invoke_commands(result.get('DisplayText'), config)
+            com_result = invoke_commands(result.get('DisplayText', ''), config)
 
             if com_result:
                 # 文字列を音声に変換して再生
@@ -121,8 +129,12 @@ def run():
                 logging.debug(msg.format(com_result))
                 speech(com_result)
             else:
-                msg = "{} はコマンドとして認識できません。"
-                msg = msg.format(result.get('DisplayText'))
+                result_str = result.get('DisplayText', '')
+                if result_str:
+                    msg = result_str+"はコマンドとして認識できません。"
+                else:
+                    msg = "音声認識に失敗しました。"
+                play_sound(config.FAILURE)
                 logging.debug(msg)
                 speech(msg)
 
