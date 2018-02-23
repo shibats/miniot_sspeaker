@@ -63,7 +63,7 @@ def process(message, config):
         # 本日の日付を取得
         td = date.today()
         wr = ("{0}の{1}月{2}日の天気は、{3}、"
-              "最高気温は{4}、最低気温は{5}、"
+              "最高気温は{4}度、最低気温は{5}度、"
               "降水確率は{6}パーセントでしょう").format(
                     place, td.month, td.day, weather, htemp, ltemp, rperc)
         return wr
