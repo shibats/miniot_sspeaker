@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# 標準ライブラリのモジュールをインポート
+
 import sys
 import os
 from io import BytesIO
@@ -8,8 +10,21 @@ import logging
 import optparse
 import importlib
 
+# PyAudio，gttsなど外部ライブラリをインポート
+
 import pyaudio
 from gtts import gTTS
+
+# PyGameをインポート
+
+pygame_ready = False
+try:
+    import pygame
+    pygame.mixer.init()
+    pygame_ready = True
+except ImportError:
+    pass
+
 
 import config
 from audio import AudioData, AudioFile
@@ -56,17 +71,33 @@ def speech(txt):
     """
     テキストを音声ファイルに変換して再生する
     """
+    # gttsを使って音声合成を実行
     so = gTTS(text=txt, lang="ja")
     so.save('speech_text.mp3')
-    os.system("omxplayer ./speech_text.mp3")
-    #os.remove('./speech_text.mp3')
+    if pygame_ready:
+        # PyGameをインポートしていたら，PyGameを使って音声再生
+        pygame.mixer.music.load('speech_text.mp3')
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            # 音声の再生が終わるまで待つ
+            pygame.time.Clock().tick(5)
+    else:
+        # PyGameをインポートできなかったので
+        # コマンドを使って音声再生(Raspberry Piのみ)
+        os.system("omxplayer ./speech_text.mp3")
+    os.remove('./speech_text.mp3')
 
 
 def play_sound(path):
     """
     ファイルを指定して音声を再生する
     """
-    os.system("aplay "+path)
+    if pygame_ready:
+        pygame.mixer.music.load(path)
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            # 音声の再生が終わるまで待つ
+            pygame.time.Clock().tick(5)
 
 
 def restart():
