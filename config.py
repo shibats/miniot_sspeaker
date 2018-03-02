@@ -22,9 +22,9 @@ WR_INDEX = 0
 # 効果音
 
 # 起動音
-STARTUP = './sounds/startup.wav'
+STARTUP = './sounds/startup.mp3'
 # ウェイクワード認識，コマンド待ち
-COMMANDREADY = './sounds/commandready.wav'
+COMMANDREADY = './sounds/commandready.mp3'
 # コマンド認識失敗
-FAILURE = './sounds/failure.wav'
+FAILURE = './sounds/failure.mp3'
 
