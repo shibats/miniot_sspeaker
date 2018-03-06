@@ -26,7 +26,6 @@ except ImportError:
     pass
 
 
-import config
 from audio import AudioData, AudioFile
 from record import get_sound_chunk
 from plugin import invoke_commands, import_commands
@@ -61,7 +60,7 @@ def recognize(ad):
     # 音声認識オブジェクトを生成
     rg = config.RECOGNIZER()
     # 音声認識を実行
-    result = rg.recognize(ad, config, show_all=True)
+    result = rg.recognize(ad, config, show_all=False)
     msg = "音声認識を実行しました。\n{}"
     logging.debug(msg.format(str(result)))
     return result
@@ -106,7 +105,6 @@ def restart():
     """
     import_commands()
     importlib.reload(config)
-    print(config.MAX_SECOND)
 
 
 def run():
@@ -124,8 +122,7 @@ def run():
         # 音声認識を実行
         result = recognize(ad)
 
-        if (result.get('RecognitionStatus', '') == 'Success' and
-            result.get('DisplayText', '') == config.WAKE_WORD ):
+        if result == config.WAKE_WORD:
             # ウェイクワードが発声されたので，コマンドを待ち受け
             msg = "ウェイクワードを認識しました({})"
             logging.debug(msg.format(config.WAKE_WORD))
@@ -136,7 +133,7 @@ def run():
             result = recognize(ad)
 
             # 再起動，終了のコマンドを実行
-            if result.get('DisplayText', '') == '再起動':
+            if result == '再起動':
                 # 再起動コマンドを実行
                 msg = ("スマートスピーカーを再起動し、"
                        "プラグインと設定ファイルを再読み込みします")
@@ -144,7 +141,7 @@ def run():
                 speech(msg)
                 restart()
                 continue
-            elif result.get('DisplayText', '') == '終了':
+            elif result == '終了':
                 # 終了コマンドを実行
                 msg = "スマートスピーカーを終了します"
                 logging.debug(msg)
@@ -152,7 +149,7 @@ def run():
                 break
 
             # 音声コマンドを実行
-            com_result = invoke_commands(result.get('DisplayText', ''), config)
+            com_result = invoke_commands(result, config)
 
             if com_result:
                 # 文字列を音声に変換して再生
@@ -160,7 +157,7 @@ def run():
                 logging.debug(msg.format(com_result))
                 speech(com_result)
             else:
-                result_str = result.get('DisplayText', '')
+                result_str = result
                 if result_str:
                     msg = result_str+"はコマンドとして認識できません。"
                 else:
@@ -178,6 +175,9 @@ def set_option():
     parser.add_option('-l', '--loglevel',
                       action='store', dest='loglevel', default='none',
                       help='ログレベルを設定する(DEBUG, INFO, WARNING, ERROR)')
+    parser.add_option('-c', '--config',
+                      action='store', dest='conffile', default='config',
+                      help='設定ファイルを指定する(オプション，省略するとconfig.pyを使う)')
     options, remainder = parser.parse_args()
     loglevel = None
     if options.loglevel.lower() == 'debug':
@@ -186,6 +186,11 @@ def set_option():
         loglevel=logging.INFO
     if loglevel:
         logging.basicConfig(level=loglevel)
+
+    # 設定ファイルを読み込む
+    conffile = options.conffile
+    global config   # 設定オブジェクト
+    config = importlib.import_module(conffile)
 
 
 if __name__ == '__main__':
