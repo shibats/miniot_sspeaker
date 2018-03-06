@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# bing_recognizer.py
+# BING Speech APIを使って音声認識をするクラス
+
 import sys
 import uuid
 import io
@@ -101,9 +104,12 @@ class Bing:
         result = json.loads(response_text)
 
         # 結果を返す
-        if show_all: return result
-        if "RecognitionStatus" not in result or result["RecognitionStatus"] != "Success" or "DisplayText" not in result: raise UnknownValueError()
-        print(result)
+        if show_all:
+            return result
+        if "RecognitionStatus" not in result or\
+             result["RecognitionStatus"] != "Success" or\
+             "DisplayText" not in result:
+                raise UnknownValueError()
         return result["DisplayText"]
 
 
